@@ -6,20 +6,108 @@
       "email": "admin@glowmana.com",
       "password": "admin123",
       "role": "admin",
-      "storeName": "GlowMana Salão"
+      "storeName": "GlowMana Salão",
+      "phone": "(11) 98765-4321",
+      "profileImage": null
     }
   ],
   "users": [
     {
       "id": 1,
-      "name": "Demo User",
-      "email": "test@demo.com",
-      "password": "password123"
+      "name": "Maria Silva",
+      "email": "maria@exemplo.com",
+      "password": "senha123",
+      "phone": "(11) 91234-5678",
+      "birthDate": "1990-05-15",
+      "address": "Rua das Flores, 123",
+      "profileImage": null,
+      "notifications": true,
+      "promotions": true
     }
   ],
-  "feedbacks": [],
-  "notifications": [],
-  "appointments": [],
-  "promotions": [],
-  "services": []
+  "services": [
+    {
+      "id": 1,
+      "name": "Corte Feminino",
+      "description": "Corte profissional com lavagem e finalização",
+      "price": 80,
+      "duration": 60,
+      "createdAt": "2025-11-01T10:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "name": "Hidratação Profunda",
+      "description": "Tratamento intensivo para cabelos danificados",
+      "price": 120,
+      "duration": 90,
+      "createdAt": "2025-11-01T10:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "name": "Coloração",
+      "description": "Coloração completa com produtos de qualidade",
+      "price": 150,
+      "duration": 120,
+      "createdAt": "2025-11-01T10:00:00.000Z"
+    },
+    {
+      "id": 4,
+      "name": "Manicure e Pedicure",
+      "description": "Cuidados completos para mãos e pés",
+      "price": 50,
+      "duration": 60,
+      "createdAt": "2025-11-01T10:00:00.000Z"
+    },
+    {
+      "id": 5,
+      "name": "Design de Sobrancelhas",
+      "description": "Modelagem e design profissional",
+      "price": 40,
+      "duration": 30,
+      "createdAt": "2025-11-01T10:00:00.000Z"
+    }
+  ],
+  "promotions": [
+    {
+      "id": 1,
+      "title": "Promoção de Novembro",
+      "description": "20% de desconto em hidratações durante todo o mês!",
+      "discount": 20,
+      "validUntil": "2025-11-30",
+      "createdAt": "2025-11-01T10:00:00.000Z"
+    }
+  ],
+  "appointments": [
+    {
+      "id": 1,
+      "userId": 1,
+      "serviceName": "Corte Feminino",
+      "date": "2025-11-25",
+      "time": "14:00",
+      "status": "confirmed",
+      "createdAt": "2025-11-20T10:00:00.000Z",
+      "statusHistory": [
+        {
+          "status": "pending",
+          "at": "2025-11-20T10:00:00.000Z"
+        },
+        {
+          "status": "confirmed",
+          "at": "2025-11-20T15:30:00.000Z"
+        }
+      ]
+    }
+  ],
+  "feedbacks": [
+    {
+      "id": 1,
+      "userId": 1,
+      "nome": "Maria Silva",
+      "rating": 5,
+      "comentario": "Excelente atendimento! Amei o resultado do meu cabelo.",
+      "createdAt": "2025-11-22T16:30:00.000Z",
+      "date": "2025-11-22"
+    }
+  ],
+  "notifications": []
 }
