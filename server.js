@@ -194,7 +194,7 @@ server.post('/auth/admin-update', (req, res) => {
 
 // Initialize collections
 const baseDb = router.db;
-['notifications','appointments','promotions','services'].forEach((coll) => {
+['notifications','appointments','promotions','services','feedbacks'].forEach((coll) => {
   if (!baseDb.has(coll).value()) {
     baseDb.set(coll, []).write();
   }
@@ -229,7 +229,8 @@ server.post('/appointments', (req, res) => {
     return res.status(400).json({ message: 'userId, serviceName, date, time são obrigatórios' });
   }
   const id = nextId('appointments');
-  const appointment = { id, userId, serviceName, date, time, status: 'pending', createdAt: new Date().toISOString() };
+  const nowIso = new Date().toISOString();
+  const appointment = { id, userId, serviceName, date, time, status: 'pending', createdAt: nowIso, statusHistory: [{ status: 'pending', at: nowIso }] };
   baseDb.get('appointments').push(appointment).write();
   createNotification({
     userId,
@@ -259,7 +260,8 @@ server.post('/store/appointments', (req, res) => {
     return res.status(400).json({ message: 'userId, serviceName, date, time são obrigatórios' });
   }
   const id = nextId('appointments');
-  const appointment = { id, userId, serviceName, date, time, status: 'confirmed', createdAt: new Date().toISOString() };
+  const nowIso = new Date().toISOString();
+  const appointment = { id, userId, serviceName, date, time, status: 'confirmed', createdAt: nowIso, statusHistory: [{ status: 'confirmed', at: nowIso }] };
   baseDb.get('appointments').push(appointment).write();
   createNotification({
     userId,
@@ -311,7 +313,11 @@ server.post('/appointments/:id/cancel', (req, res) => {
   const { initiatedBy } = req.body;
   const appt = baseDb.get('appointments').find({ id: parseInt(id,10) }).value();
   if (!appt) return res.status(404).json({ message: 'Agendamento não encontrado' });
-  baseDb.get('appointments').find({ id: appt.id }).assign({ status: 'cancelled' }).write();
+  const nowIso = new Date().toISOString();
+  const updated = baseDb.get('appointments').find({ id: appt.id });
+  const hist = updated.value().statusHistory || [];
+  hist.push({ status: 'cancelled', at: nowIso });
+  updated.assign({ status: 'cancelled', cancelledAt: nowIso, statusHistory: hist }).write();
   createNotification({
     userId: appt.userId,
     type: 'appointment_cancelled',
@@ -427,7 +433,13 @@ server.patch('/appointments/:id', (req, res) => {
   const appt = baseDb.get('appointments').find({ id: parseInt(id, 10) }).value();
   if (!appt) return res.status(404).json({ message: 'Agendamento não encontrado' });
   
-  baseDb.get('appointments').find({ id: appt.id }).assign({ status }).write();
+  const updated = baseDb.get('appointments').find({ id: appt.id });
+  const hist = updated.value().statusHistory || [];
+  const nowIso = new Date().toISOString();
+  hist.push({ status, at: nowIso });
+  const patchData = { status, statusHistory: hist };
+  if (status === 'cancelled') patchData.cancelledAt = nowIso;
+  updated.assign(patchData).write();
   
   if (status === 'confirmed') {
     createNotification({
@@ -448,6 +460,61 @@ server.patch('/appointments/:id', (req, res) => {
   }
   
   return res.json({ appointment: baseDb.get('appointments').find({ id: appt.id }).value() });
+});
+
+// Feedback endpoints
+server.get('/feedbacks', (req, res) => {
+  const list = baseDb.get('feedbacks').sortBy('createdAt').value().reverse();
+  return res.json(list);
+});
+
+server.post('/feedbacks', (req, res) => {
+  const { userId, nome, rating, comentario } = req.body;
+  if (!userId || !nome || !rating) return res.status(400).json({ message: 'Campos obrigatórios: userId, nome, rating' });
+  const id = nextId('feedbacks');
+  const now = new Date();
+  const createdAt = now.toISOString();
+  const date = createdAt.substring(0, 10); // YYYY-MM-DD
+  const fb = { id, userId, nome, rating, comentario: comentario || '', createdAt, date };
+  baseDb.get('feedbacks').push(fb).write();
+  return res.status(201).json(fb);
+});
+
+// Stats for today
+function normalizeDateString(d) {
+  if (!d) return null;
+  // Accept formats with / or -; extract first 10 digits when possible
+  const cleaned = d.replace(/\//g, '-');
+  // If includes time, split
+  return cleaned.substring(0, 10);
+}
+
+server.get('/stats/today', (req, res) => {
+  const today = new Date().toISOString().substring(0, 10); // YYYY-MM-DD
+  const appointments = baseDb.get('appointments').value();
+  const feedbacks = baseDb.get('feedbacks').value();
+
+  const todaysAppointments = appointments.filter(a => normalizeDateString(a.date) === today);
+  const pending = todaysAppointments.filter(a => a.status === 'pending').length;
+  const confirmed = todaysAppointments.filter(a => a.status === 'confirmed').length;
+  const cancelled = todaysAppointments.filter(a => a.status === 'cancelled').length;
+  const cancellationsToday = appointments.filter(a => a.cancelledAt && a.cancelledAt.substring(0,10) === today).length;
+
+  const todaysFeedbacks = feedbacks.filter(f => f.date === today).length;
+
+  return res.json({
+    date: today,
+    appointments: {
+      total: todaysAppointments.length,
+      pending,
+      confirmed,
+      cancelled,
+      cancellationsToday
+    },
+    feedbacks: {
+      totalToday: todaysFeedbacks
+    }
+  });
 });
 
 // DELETE endpoints
