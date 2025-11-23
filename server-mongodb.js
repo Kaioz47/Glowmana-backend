@@ -16,6 +16,79 @@ const app = express();
 // Connect to MongoDB
 connectDB();
 
+// Auto-seed on first run
+let isSeeded = false;
+
+async function autoSeed() {
+  if (isSeeded) return;
+  
+  try {
+    const userCount = await User.countDocuments();
+    const adminCount = await StoreAdmin.countDocuments();
+    const serviceCount = await Service.countDocuments();
+    
+    // Se já tem dados, não faz seed
+    if (userCount > 0 || adminCount > 0 || serviceCount > 0) {
+      console.log('✅ Banco já contém dados. Seed não necessário.');
+      isSeeded = true;
+      return;
+    }
+    
+    console.log('🌱 Primeira execução detectada. Populando banco...');
+    
+    // Criar admin
+    await StoreAdmin.create({
+      id: 1,
+      name: 'Administrador GlowMana',
+      email: 'admin@glowmana.com',
+      password: 'admin123',
+      role: 'admin',
+      storeName: 'GlowMana Salão',
+      phone: '(11) 98765-4321'
+    });
+
+    // Criar usuário demo
+    await User.create({
+      id: 1,
+      name: 'Maria Silva',
+      email: 'maria@exemplo.com',
+      password: 'senha123',
+      phone: '(11) 91234-5678',
+      birthDate: '1990-05-15',
+      address: 'Rua das Flores, 123',
+      notifications: true,
+      promotions: true
+    });
+
+    // Criar serviços
+    await Service.insertMany([
+      { id: 1, name: 'Corte Feminino', description: 'Corte profissional com lavagem e finalização', price: 80, duration: 60 },
+      { id: 2, name: 'Hidratação Profunda', description: 'Tratamento intensivo para cabelos danificados', price: 120, duration: 90 },
+      { id: 3, name: 'Coloração', description: 'Coloração completa com produtos de qualidade', price: 150, duration: 120 },
+      { id: 4, name: 'Manicure e Pedicure', description: 'Cuidados completos para mãos e pés', price: 50, duration: 60 },
+      { id: 5, name: 'Design de Sobrancelhas', description: 'Modelagem e design profissional', price: 40, duration: 30 }
+    ]);
+
+    // Criar promoção
+    await Promotion.create({
+      id: 1,
+      title: 'Promoção de Novembro',
+      description: '20% de desconto em hidratações durante todo o mês!',
+      discount: 20,
+      validUntil: '2025-11-30'
+    });
+
+    console.log('✅ Banco populado com sucesso!');
+    console.log('📊 Dados criados: 1 admin, 1 usuário, 5 serviços, 1 promoção');
+    isSeeded = true;
+  } catch (error) {
+    console.error('❌ Erro ao popular banco:', error);
+  }
+}
+
+// Executar seed após conectar
+setTimeout(autoSeed, 2000);
+
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
