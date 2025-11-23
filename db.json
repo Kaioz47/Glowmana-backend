@@ -1,0 +1,25 @@
+{
+  "storeAdmins": [
+    {
+      "id": 1,
+      "name": "Administrador GlowMana",
+      "email": "admin@glowmana.com",
+      "password": "admin123",
+      "role": "admin",
+      "storeName": "GlowMana Salão"
+    }
+  ],
+  "users": [
+    {
+      "id": 1,
+      "name": "Demo User",
+      "email": "test@demo.com",
+      "password": "password123"
+    }
+  ],
+  "feedbacks": [],
+  "notifications": [],
+  "appointments": [],
+  "promotions": [],
+  "services": []
+}
