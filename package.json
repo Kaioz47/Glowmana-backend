@@ -4,12 +4,17 @@
   "description": "GlowMana Backend API",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "start:mongodb": "node server-mongodb.js",
+    "seed": "node seed.js",
+    "dev": "nodemon server-mongodb.js"
   },
   "engines": {
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "json-server": "^0.17.3"
+    "dotenv": "^17.2.3",
+    "json-server": "^0.17.3",
+    "mongoose": "^9.0.0"
   }
 }
